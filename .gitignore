@@ -1,3 +1,7 @@
+# gdb history files
+.gdb*
+**/.gdb*
+
 # vim swap files
 *.swp
 **/*.swp
