@@ -30,6 +30,8 @@
 #include <panel.h>
 #include <locale.h>                              //setlocale()
 #include <wchar.h>                               //wide characters
+#include <stdlib.h>                              //exit()
+#include <stdio.h>                               //printf()
 
 
 extern wchar_t mynick[NICKLEN + 1];              //these coming from globals.c
@@ -58,14 +60,16 @@ control_init(int argc, char *argv[])
 
 	if(win_init(argparse->fromirc) != 0)     //init chat window
 	{
-		/*TODO:handle*/
+		/*TODO*/
 	}
 
 	bar_init();                              //init status bar
 
-	if(in_init(argparse->toirc) != 0)        //init input field
+	if(!in_init(argparse->toirc))            //init input field
 	{
-		/*TODO:handle*/
+		control_del();
+		printf("*ERROR 206* cannot open toirc fifo\n");
+		exit(6);
 	}
 
 	update_panels();                         //order panels at z axis

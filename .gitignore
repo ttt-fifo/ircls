@@ -1,3 +1,6 @@
+# directory with my personal staff - to be ignored
+donotadd/*
+
 # gdb history files
 .gdb*
 **/.gdb*

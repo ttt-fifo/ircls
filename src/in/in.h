@@ -17,19 +17,28 @@
 #define INBUFLEN 256                             //length of input buffer
 
 
+/*in data type struct*/
 typedef struct In
 {
-	FILE *fd;
-	WINDOW *win;
-	PANEL *pan;
-	wchar_t buf[INBUFLEN];
-	int buf_offset;
+	FILE *fd;                                //file descriptor for fifo
+	WINDOW *win;                             //ncurses window
+	PANEL *pan;                              //ncurses pane
+	wchar_t buf[INBUFLEN];                   //input buffer
+	int buf_offset;                          //index next char to write
 } In;
 
 
+/*
+ * Initializes input
+ * filename: the name of named pipe (fifo) to write user input to
+ * Returns: OK-1, ERR-0
+ */
 int
 in_init(const char filename[PATHLEN]);
 
+/*
+ * Free memory and file descriptors
+ */
 void
 in_del(void);
 
