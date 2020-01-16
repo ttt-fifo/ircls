@@ -1,7 +1,3 @@
-/* FIXME
- * there is a mess with in.curx and line overflow correction
- * needs to be re-implemented
- */
 #include <in/in.h>
 #include <global/global.h>
 
@@ -21,7 +17,7 @@
  * +NOK - too much extras - red input row on error command
  * +OK - how to write in green in input
  * +OK (forgot to implement) sometimes PONG comes in window 
- * in.curx and line overflow correction, because wen out of scope
+ * +OK in.curx and line overflow correction, because wen out of scope
  * resize needed :) vertical OK, horizontal buggy
  * +OK due to overlaping windows -
  *    maybe panels needed? (sometimes wrong init window)
@@ -31,8 +27,8 @@
  * argv sane implementation
  * go to github
  */
-//input data    fd    win   pan   curx buf  buf_offset
-static In in = {NULL, NULL, NULL, 0,   L"", 0};
+//input data    fd    win   pan   buf  buf_offset
+static In in = {NULL, NULL, NULL, L"", 0};
 
 extern Style style;
 extern wchar_t tosend[CHANLEN + 1];
@@ -68,6 +64,7 @@ in_del(void)
 	if(in.win != NULL) delwin(in.win);
 	if(in.pan != NULL) del_panel(in.pan);
 	if(in.fd != NULL) fclose(in.fd);
+	in.buf_offset = 0;
 } /*in_del()*/
 
 
@@ -76,12 +73,21 @@ in_draw(void)
 {
 	int h;
 	int w;
+	int i;
 
 	getmaxyx(in.win, h, w);
 
+	i = in.buf_offset - w + 1;
+	i = MAX(0, i);
+	/*
+	in.buf_offset - x = w - 1;
+	in.buf_offset - w + 1 = x;
+	*/
+
+
 	wmove(in.win, 0, 0);
 	wattron(in.win, style.input);
-	for(int i=0; i < in.buf_offset; i++)
+	for(i=i; i < in.buf_offset; i++)
 	{
 		wprintw(in.win, "%lc", in.buf[i]);
 	}
@@ -96,8 +102,11 @@ void
 in_input(void)
 {
 	wchar_t ch;
+	int h;
+	int w;
 
-	wmove(in.win, 0, in.buf_offset);
+	getmaxyx(in.win, h, w);
+	wmove(in.win, 0, MIN(in.buf_offset, w - 1));
 
 	wget_wch(in.win, &ch);
 
@@ -131,28 +140,7 @@ in_input(void)
 static void
 in_input_buffer(const wchar_t ch)
 {
-	int y;
-	int x;
-	int h;
-	int w;
-
-	getyx(in.win, y, x);
-	getmaxyx(in.win, h, w);
-
-	if(in.buf_offset < INBUFLEN - 1)
-	{
-		in.buf[in.buf_offset++] = ch;
-		in.curx++;
-	}
-
-	if(in.curx >= w - 1)
-	{
-		in.curx = 0;
-		wmove(in.win, y, in.curx);
-		wclrtoeol(in.win);
-	}
-	else
-		wmove(in.win, y, in.curx);
+	if(in.buf_offset < INBUFLEN - 1) in.buf[in.buf_offset++] = ch;
 } /*in_input_buffer()*/
 
 

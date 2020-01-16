@@ -22,7 +22,6 @@ typedef struct In
 	FILE *fd;
 	WINDOW *win;
 	PANEL *pan;
-	int curx;
 	wchar_t buf[INBUFLEN];
 	int buf_offset;
 } In;
