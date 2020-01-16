@@ -1,0 +1,14 @@
+#ifndef STYLE_H
+#define STYLE_H
+
+
+enum StyleEnum {STYLE_ROW_A = 20, STYLE_ROW_B, STYLE_ROW_A_HL, STYLE_ROW_B_HL,
+	        STYLE_ROW_TOME, STYLE_ERROR,
+                STYLE_BAR, STYLE_BAR_TXTBOX, STYLE_COUNT,
+		STYLE_COUNT_HIGHLIGHT, STYLE_BORDER, STYLE_INPUT};
+
+void
+style_init(void);
+
+
+#endif /*STYLE_H*/
