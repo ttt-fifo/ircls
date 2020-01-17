@@ -17,8 +17,9 @@ index_new(const int size)
 		return NULL;
 	}
 
-	index->offset = 0;
 	index->size = size;
+	index->buf[0] = 0;
+	index->offset = 1;
 
 	return index;
 } /*index_new()*/
@@ -32,18 +33,16 @@ index_del(Index *index)
 } /*index_del()*/
 
 
-int
+void
 index_append(Index *index, const size_t data)
 {
-	if(data == 0) return 0;
 	index->buf[index->offset++] = data;
 	if(index->offset == index->size) index->offset = 0;
-	return 1;
 } /*index_append()*/
 
 
-size_t
-index_get(Index *index, const int i)
+int
+index_get(Index *index, size_t *val, const int i)
 {
 	int i_;
 
@@ -54,5 +53,7 @@ index_get(Index *index, const int i)
 	if(i_ < 0) i_ = index->size + i_;
 	if(i_ > index->size - 1) i_ = i_ - index->size;
 
-	return index->buf[i_];
+	*val = index->buf[i_];
+
+	return 1;
 } /*index_get()*/

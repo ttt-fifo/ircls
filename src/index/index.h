@@ -17,11 +17,11 @@ index_new(const int size);
 void
 index_del(Index *index);
 
-int
+void
 index_append(Index *index, const size_t data);
 
-size_t
-index_get(Index *index, const int i);
+int
+index_get(Index *index, size_t *val, const int i);
 
 
 #endif /*INDEX_H*/

@@ -47,7 +47,8 @@ win_init(const char filename[PATHLEN])
 	}
 	win_index_file();
 
-	win.display_bytes = index_get(win.index, -1);
+	/*win.display_bytes = index_get(win.index, -1);*/
+	index_get(win.index, &(win.display_bytes), -1);
 
 	return 0;
 } /*win_init()*/
@@ -75,32 +76,30 @@ win_draw(void)
 
 	win_index_file();
 
-	i = -2;
-	start = index_get(win.index, i);
-	if((start == 0) || (start < win.display_bytes)) return;
+	i = -1;
+	index_get(win.index, &start, i);
+	if(start < win.display_bytes) return;
 
+	i = 0;
 	do
 	{
-		start = index_get(win.index, --i);
-		if((start == 0) || (start < win.display_bytes))
-		{
-			i++;
-			break;
-		}
+		if(!index_get(win.index, &start, --i)) break;
 	}
 	while(start > win.display_bytes);
+	
 
 	while(i < -1)
 	{
-		start = index_get(win.index, i++);
-		end = index_get(win.index, i);
+		if(!index_get(win.index, &start, i++)) break;
+		if(!index_get(win.index, &end, i)) break;
 
 		win_read(buf, start, end);
 		buf[strcspn(buf, "\r")] = '\0';
 		if(!win_parse(buf, wbuf, &styl)) continue;
 		win_draw_entry(wbuf, styl);
 	}
-	win.display_bytes = index_get(win.index, -1);
+
+	index_get(win.index, &(win.display_bytes), -1);
 	fseek(win.fd, win.read_bytes, SEEK_SET);
 	wrefresh(win.win); //???
 } /*win_draw()*/
