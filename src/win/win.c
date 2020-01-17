@@ -68,7 +68,7 @@ win_draw(void)
 {
 	int i;
 	char buf[CBUFLEN];
-	wchar_t wbuf[WBUFLEN];
+	wchar_t wbuf[WBUFLEN + 1];
 	size_t start;
 	size_t end;
 	int styl;
@@ -131,7 +131,7 @@ win_read(char buf[CBUFLEN], const size_t start, const size_t end)
 
 
 static int
-win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
+win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl)
 {
 	if(buf[MARKPOSITION] == '<')
 	{
@@ -143,8 +143,8 @@ win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
 	}
 	else if(buf[MARKPOSITION] == '!')
 	{
-		mbstowcs(wbuf, buf, WBUFLEN - 1);
-		wbuf[WBUFLEN - 1] = '\0';
+		mbstowcs(wbuf, buf, WBUFLEN);
+		wbuf[WBUFLEN] = '\0';
 		*styl = style.error;
 		return 1;
 	}
@@ -166,19 +166,20 @@ win_row_style_flip(void)
 
 
 static int
-win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
+win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1],
+		  int *styl)
 {
 	wchar_t t[TIMELEN + 1];
 	wchar_t nick[NICKLEN + 1];
 	wchar_t cmd[CMDLEN + 1];
 	wchar_t chan[CHANLEN + 1];
-	wchar_t msg[WBUFLEN]; //can be avoided?
+	wchar_t msg[WBUFLEN + 1]; //can be avoided?
 	wchar_t *p;
 	wchar_t *pbuf;
 	int i;
 
-	mbstowcs(wbuf, buf, WBUFLEN - 1);
-	wbuf[WBUFLEN - 1] = L'\0';
+	mbstowcs(wbuf, buf, WBUFLEN);
+	wbuf[WBUFLEN] = L'\0';
 
 	pbuf = wbuf;
 
@@ -240,16 +241,17 @@ win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
 	}
 	pbuf++;
 
-	swprintf(msg, WBUFLEN - 1, L"%ls", pbuf);
-	msg[WBUFLEN - 1] = L'\0';
+	swprintf(msg, WBUFLEN, L"%ls", pbuf);
+	msg[WBUFLEN] = L'\0';
 
 	t[TIMEMINEND + 1] = L'\0';
 	p = t + TIMEHRSTART;
 
 	swprintf(wbuf,
-		 WBUFLEN - 1,
+		 WBUFLEN,
 		 L"%ls [%ls] %ls: %ls",
 		 p, chan, nick, msg);
+	wbuf[WBUFLEN] = L'\0';
 
 	if(wcsncmp(mynick, chan, NICKLEN) == 0)
 	{
@@ -271,19 +273,19 @@ win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
 
 
 static int
-win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
+win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl)
 {
 	wchar_t t[TIMELEN + 1];
 	wchar_t chan[CHANLEN + 1];
-	wchar_t msg[WBUFLEN]; //can be avoided?
+	wchar_t msg[WBUFLEN + 1]; //can be avoided?
 	wchar_t *p;
 	wchar_t *pbuf;
 	int i;
 
 	*styl = style.input;
 
-	mbstowcs(wbuf, buf, WBUFLEN - 1);
-	wbuf[WBUFLEN - 1] = L'\0';
+	mbstowcs(wbuf, buf, WBUFLEN);
+	wbuf[WBUFLEN] = L'\0';
 
 	pbuf = wbuf;
 
@@ -320,8 +322,8 @@ win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
 	*p = L'\0';
 
 	pbuf++;
-	swprintf(msg, WBUFLEN - 1, L"%ls", pbuf);
-	msg[WBUFLEN - 1] = L'\0';
+	swprintf(msg, WBUFLEN, L"%ls", pbuf);
+	msg[WBUFLEN] = L'\0';
 
         t[TIMEMINEND + 1] = L'\0';
         p = t + TIMEHRSTART;
@@ -330,13 +332,14 @@ win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl)
 		 WBUFLEN - 1,
 		 L"%ls [%ls] %ls: %ls",
 		 p, chan, mynick, msg);
+	wbuf[WBUFLEN] = '\0';
 	
 	return 1;
 } /*win_parse_toirc()*/
 
 
 static void
-win_draw_entry(const wchar_t wbuf[WBUFLEN], const int styl)
+win_draw_entry(const wchar_t wbuf[WBUFLEN + 1], const int styl)
 {
 	int h;
 	int w;

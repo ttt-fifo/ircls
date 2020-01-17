@@ -47,19 +47,20 @@ static void
 win_read(char buf[CBUFLEN], const size_t start, const size_t end);
 
 static int
-win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl);
+win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl);
 
 static int
 win_row_style_flip(void);
 
 static int
-win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl);
+win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1],
+		  int *styl);
 
 static int
-win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN], int *styl);
+win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl);
 
 static void
-win_draw_entry(const wchar_t wbuf[WBUFLEN], const int styl);
+win_draw_entry(const wchar_t wbuf[WBUFLEN + 1], const int styl);
 
 
 #endif /*WIN_H*/
