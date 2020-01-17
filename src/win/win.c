@@ -20,7 +20,7 @@ extern wchar_t tosend[CHANLEN + 1];
 
 
 int
-win_init(const char filename[PATHLEN])
+win_init(const char filename[PATHLEN + 1])
 {
 	int h;
 	int w;
@@ -47,7 +47,6 @@ win_init(const char filename[PATHLEN])
 	}
 	win_index_file();
 
-	/*win.display_bytes = index_get(win.index, -1);*/
 	index_get(win.index, &(win.display_bytes), -1);
 
 	return 0;

@@ -23,7 +23,7 @@ extern int count_tome;                           //count of my private msg
  * Returns: OK-1, ERR-0
  */
 int
-in_init(const char filename[PATHLEN])
+in_init(const char filename[PATHLEN + 1])
 {
 	int h;                                   //height
 	int w;                                   //width

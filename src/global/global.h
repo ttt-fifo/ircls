@@ -5,7 +5,7 @@
 #define GLOBAL_H
 
 
-#define PATHLEN 1024                             //length of the paths
+#define PATHLEN 1023                             //length of the paths
 #define WBUFLEN 1024                             //wchar buffers length
 #define CBUFLEN 4096                             //char buffers length
 #define NICKLEN 16                               //nickname length

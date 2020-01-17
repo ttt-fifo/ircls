@@ -49,12 +49,12 @@ argparse_new(int argc, char *argv[])
 				case ARG_FROMIRC:
 					strncpy(argparse->fromirc,
 						argv[i], PATHLEN);
-					argparse->fromirc[PATHLEN - 1] = '\0';
+					argparse->fromirc[PATHLEN] = '\0';
 					break;
 				case ARG_TOIRC:
 					strncpy(argparse->toirc,
 						argv[i], PATHLEN);
-					argparse->toirc[PATHLEN - 1] = '\0';
+					argparse->toirc[PATHLEN] = '\0';
 					break;
 				case ARG_SERVER: //multibyte char to wchar_t
 					strncpy(cserver,

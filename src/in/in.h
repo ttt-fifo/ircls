@@ -35,7 +35,7 @@ typedef struct In
  * Returns: OK-1, ERR-0
  */
 int
-in_init(const char filename[PATHLEN]);
+in_init(const char filename[PATHLEN + 1]);
 
 /*
  * Free memory and file descriptors

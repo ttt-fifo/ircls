@@ -20,8 +20,8 @@ enum ArgIndex {ARG_UNKNOWN = 0, ARG_FROMIRC, ARG_TOIRC, ARG_NICK, ARG_SERVER};
 /*this is the structure where argparse object is parsed to*/
 typedef struct ArgParse
 {
-	char fromirc[PATHLEN];                   //file with output from irclsd
-	char toirc[PATHLEN];                     //fifo to input in irclsd
+	char fromirc[PATHLEN + 1];               //file with output from irclsd
+	char toirc[PATHLEN + 1];                 //fifo to input in irclsd
 	wchar_t nick[NICKLEN + 1];               //nick (wide char)
 	wchar_t server[SERVERLEN + 1];           //server (wide char)
 } ArgParse;

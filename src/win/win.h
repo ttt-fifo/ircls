@@ -15,9 +15,8 @@
 #define TIMELEN 19
 #define TIMEHRSTART 11
 #define TIMEMINEND 15
-/*#define NICKLEN 16*/
 #define CMDLEN 7
-/*#define CHANLEN 32*/
+#define HISTORYBUF 100   //must be greater than window height
 
 
 typedef struct Win
@@ -33,7 +32,7 @@ typedef struct Win
 
 
 int
-win_init(const char filename[PATHLEN]);
+win_init(const char filename[PATHLEN + 1]);
 
 void
 win_del(void);

@@ -18,8 +18,8 @@ index_new(const int size)
 	}
 
 	index->size = size;
-	index->buf[0] = 0;
-	index->offset = 1;
+	index->buf[0] = 0;                       //0 byte is always indexed
+	index->offset = 1;                       //and the offset is on [1]
 
 	return index;
 } /*index_new()*/
