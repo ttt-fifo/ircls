@@ -202,19 +202,19 @@ static void
 in_cmd_raw(void)
 {
 	wchar_t *p;
-	char cbuf[CBUFLEN];                      //char buffer to send
-	char cinbuf[CBUFLEN];                    //multibyte in.buf
+	char cbuf[CBUFLEN + 1];                  //char buffer to send
+	char cinbuf[CBUFLEN + 1];                //multibyte in.buf
 
 	p = in.buf + 4;                          //move to data after command
 	if(*p == L'\0') return;
 	p++;
 	if(*p == L'\0') return;
 
-	wcstombs(cinbuf, p, CBUFLEN - 1);        //put in multibyte cbuf
-	cinbuf[CBUFLEN - 1] = '\0';
+	wcstombs(cinbuf, p, CBUFLEN);            //put in multibyte cbuf
+	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN - 1, "%s\n", cinbuf); //arrange buffer to send
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "%s\n", cinbuf); //arrange buffer to send
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);                      //send to irclsd pipe
 } /*in_cmd_raw()*/
@@ -228,16 +228,16 @@ static void
 in_cmd_msg(void)
 {
 	wchar_t *p;
-	char cbuf[CBUFLEN];
-	char cinbuf[CBUFLEN];
+	char cbuf[CBUFLEN + 1];
+	char cinbuf[CBUFLEN + 1];
 
 	p = in.buf + 4;
 
-	wcstombs(cinbuf, p, CBUFLEN - 1);
-	cinbuf[CBUFLEN - 1] = '\0';
+	wcstombs(cinbuf, p, CBUFLEN);
+	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN - 1, "PRIVMSG%s\n", cinbuf);
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "PRIVMSG%s\n", cinbuf);
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);
 } /*in_cmd_msg()*/
@@ -247,17 +247,17 @@ static void
 in_cmd_join(void)
 {
 	wchar_t *p;
-	char cbuf[CBUFLEN];
-	char cinbuf[CBUFLEN];
+	char cbuf[CBUFLEN + 1];
+	char cinbuf[CBUFLEN + 1];
 
 	p = in.buf + 5;
 	if(*p == L'\0') return;
 
-	wcstombs(cinbuf, p, CBUFLEN - 1);
-	cinbuf[CBUFLEN - 1] = '\0';
+	wcstombs(cinbuf, p, CBUFLEN);
+	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN - 1, "JOIN%s\n", cinbuf);
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "JOIN%s\n", cinbuf);
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);
 } /*in_cmd_join()*/
@@ -267,17 +267,17 @@ static void
 in_cmd_part(void)
 {
 	wchar_t *p;
-	char cbuf[CBUFLEN];
-	char cinbuf[CBUFLEN];
+	char cbuf[CBUFLEN + 1];
+	char cinbuf[CBUFLEN + 1];
 
 	p = in.buf + 5;
 	if(*p == L'\0') return;
 
-	wcstombs(cinbuf, p, CBUFLEN - 1);
-	cinbuf[CBUFLEN - 1] = '\0';
+	wcstombs(cinbuf, p, CBUFLEN);
+	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN - 1, "PART%s\n", cinbuf);
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "PART%s\n", cinbuf);
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);
 } /*in_cmd_part()*/
@@ -287,12 +287,12 @@ static void
 in_cmd_quit(void)
 {
 	wchar_t *p;
-	char cbuf[CBUFLEN];
+	char cbuf[CBUFLEN + 1];
 
 	p = in.buf + 5;
 
-	snprintf(cbuf, CBUFLEN - 1, "QUIT\n");
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "QUIT\n");
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);
 } /*in_cmd_quit()*/
@@ -307,9 +307,9 @@ in_cmd_exit(void)
 static void
 in_cmd_msg_default(void)
 {
-	char cbuf[CBUFLEN];
+	char cbuf[CBUFLEN + 1];
 	char ctosend[4*CHANLEN + 1];
-	char cinbuf[CBUFLEN];
+	char cinbuf[CBUFLEN + 1];
 	wchar_t *p;
 
 	if(tosend[0] == L'\0')
@@ -329,18 +329,18 @@ in_cmd_msg_default(void)
 
 	wcstombs(ctosend, tosend, 4*CHANLEN);
 	ctosend[4*CHANLEN] = '\0';
-	wcstombs(cinbuf, in.buf, CBUFLEN - 1);
-	cinbuf[CBUFLEN - 1] = '\0';
+	wcstombs(cinbuf, in.buf, CBUFLEN);
+	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN - 1, "PRIVMSG %s %s\n", ctosend, cinbuf);
-	cbuf[CBUFLEN - 1] = '\0';
+	snprintf(cbuf, CBUFLEN, "PRIVMSG %s %s\n", ctosend, cinbuf);
+	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);
 } /*in_cmd_msg_default()*/
 
 
 static int
-in_send_pipe(const char buf[CBUFLEN])
+in_send_pipe(const char buf[CBUFLEN + 1])
 {
 	fwrite(buf, sizeof(char), strlen(buf), in.fd);
 	fflush(in.fd);

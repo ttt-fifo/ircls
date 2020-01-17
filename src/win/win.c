@@ -67,7 +67,7 @@ void
 win_draw(void)
 {
 	int i;
-	char buf[CBUFLEN];
+	char buf[CBUFLEN + 1];
 	wchar_t wbuf[WBUFLEN + 1];
 	size_t start;
 	size_t end;
@@ -118,10 +118,10 @@ win_index_file(void)
 
 
 static void
-win_read(char buf[CBUFLEN], const size_t start, const size_t end)
+win_read(char buf[CBUFLEN + 1], const size_t start, const size_t end)
 {
 	size_t read_size = end - start;
-	read_size = MIN(read_size, CBUFLEN);
+	read_size = MIN(read_size, CBUFLEN + 1);
 
 	if(fseek(win.fd, start, SEEK_SET) != 0) return;
 
@@ -131,7 +131,7 @@ win_read(char buf[CBUFLEN], const size_t start, const size_t end)
 
 
 static int
-win_parse(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl)
+win_parse(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1], int *styl)
 {
 	if(buf[MARKPOSITION] == '<')
 	{
@@ -166,7 +166,7 @@ win_row_style_flip(void)
 
 
 static int
-win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1],
+win_parse_fromirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
 		  int *styl)
 {
 	wchar_t t[TIMELEN + 1];
@@ -273,7 +273,8 @@ win_parse_fromirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1],
 
 
 static int
-win_parse_toirc(const char buf[CBUFLEN], wchar_t wbuf[WBUFLEN + 1], int *styl)
+win_parse_toirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
+		int *styl)
 {
 	wchar_t t[TIMELEN + 1];
 	wchar_t chan[CHANLEN + 1];

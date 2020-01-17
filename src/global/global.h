@@ -7,7 +7,7 @@
 
 #define PATHLEN 1023                             //length of the paths
 #define WBUFLEN 1023                             //wchar buffers length
-#define CBUFLEN 4096                             //char buffers length
+#define CBUFLEN 4095                             //char buffers length
 #define NICKLEN 16                               //nickname length
 #define CHANLEN 32                               //channels length
 #define SERVERLEN 128                            //server name length

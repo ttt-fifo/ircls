@@ -80,7 +80,7 @@ static void
 in_cmd_msg_default(void);
 
 static int
-in_send_pipe(const char buf[CBUFLEN]);
+in_send_pipe(const char buf[CBUFLEN + 1]);
 
 static void
 in_key_backspace(void);
