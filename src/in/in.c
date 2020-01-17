@@ -32,7 +32,7 @@ in_init(const char filename[PATHLEN])
 	 * write is needed not to hang waiting for writer on the other end
 	 */
 	in.fd = fopen(filename, "r+");
-	if(in.fd == NULL) return 1;              //ERR
+	if(in.fd == NULL) return 0;              //ERR
 
 	getmaxyx(stdscr, h, w);
 
@@ -42,7 +42,7 @@ in_init(const char filename[PATHLEN])
 
 	in.pan = new_panel(in.win);              //pannel for z axis overlap
 
-	return 0;                                //OK
+	return 1;                                //OK
 
 } /*in_init()*/
 

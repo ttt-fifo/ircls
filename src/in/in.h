@@ -13,7 +13,8 @@
 #include <stdio.h>                               //FILE
 
 
-#define INTIMEOUT 800                            //timeout waiting for one ch
+#define INTIMEOUT 250                            //timeout waiting for one ch
+                                                 //(milliseconds)
 #define INBUFLEN 256                             //length of input buffer
 
 
