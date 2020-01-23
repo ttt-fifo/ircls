@@ -1,6 +1,8 @@
 #include <win/win.h>
 #include <global/global.h>
 #include <index/index.h>
+#include <ircproto/ircproto.h>
+#include <stylerot/stylerot.h>
 
 #include <ncursesw/curses.h>
 #include <stdio.h> //fopen()
@@ -11,7 +13,7 @@
 
 
 /*win data        fd    win   pan   read_bytes display_bytes current_row_style*/
-static Win win = {NULL, NULL, NULL, 0,         0,            0};
+static Win win; //TODO: initialization here
 
 extern Style style;
 extern int count_tome;
@@ -32,6 +34,13 @@ win_init(const char filename[PATHLEN + 1])
 	scrollok(win.win, TRUE);
 	win.pan = new_panel(win.win);
 
+	win.ircproto = ircproto_new();
+	if(win.ircproto == NULL)
+	{
+		win_del();
+		return -3;
+	}
+
 	win.fd = fopen(filename, "r");
 	if(win.fd == NULL)
 	{
@@ -39,7 +48,7 @@ win_init(const char filename[PATHLEN + 1])
 		return -1;
 	}
 
-	win.index = index_new(100); /*todo:100*/
+	win.index = index_new(HISTORYBUF);
 	if(win.index == NULL)
 	{
 		win_del();
@@ -59,7 +68,8 @@ win_del(void)
 	if(win.win != NULL) delwin(win.win);
 	if(win.pan != NULL) del_panel(win.pan);
 	if(win.fd != NULL) fclose(win.fd);
-	if(win.index != NULL) index_del(win.index);
+	index_del(win.index);
+	ircproto_del(win.ircproto);
 } /*win_del()*/
 
 
@@ -77,7 +87,7 @@ win_draw(void)
 
 	i = -1;
 	index_get(win.index, &start, i);
-	if(start < win.display_bytes) return;
+	if(start <= win.display_bytes) return;
 
 	i = 0;
 	do
@@ -92,10 +102,9 @@ win_draw(void)
 		if(!index_get(win.index, &start, i++)) break;
 		if(!index_get(win.index, &end, i)) break;
 
-		win_read(buf, start, end);
+		win_read_file(buf, start, end);
 		buf[strcspn(buf, "\r")] = '\0';
-		if(!win_parse(buf, wbuf, &styl)) continue;
-		win_draw_entry(wbuf, styl);
+		win_draw_line(buf);
 	}
 
 	index_get(win.index, &(win.display_bytes), -1);
@@ -118,7 +127,7 @@ win_index_file(void)
 
 
 static void
-win_read(char buf[CBUFLEN + 1], const size_t start, const size_t end)
+win_read_file(char buf[CBUFLEN + 1], const size_t start, const size_t end)
 {
 	size_t read_size = end - start;
 	read_size = MIN(read_size, CBUFLEN + 1);
@@ -127,228 +136,127 @@ win_read(char buf[CBUFLEN + 1], const size_t start, const size_t end)
 
 	fread(buf, sizeof(char), read_size, win.fd); /*how to check success?*/
 	buf[read_size - 1] = '\0';
-} /*win_read()*/
-
-
-static int
-win_parse(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1], int *styl)
-{
-	if(buf[MARKPOSITION] == '<')
-	{
-		return win_parse_fromirc(buf, wbuf, styl);
-	}
-	else if(buf[MARKPOSITION] == '>')
-	{
-		return win_parse_toirc(buf, wbuf, styl);
-	}
-	else if(buf[MARKPOSITION] == '!')
-	{
-		mbstowcs(wbuf, buf, WBUFLEN);
-		wbuf[WBUFLEN] = '\0';
-		*styl = style.error;
-		return 1;
-	}
-	else
-		return 0;
-} /*win_parse()*/
-
-
-static int
-win_row_style_flip(void)
-{
-	if(win.current_row_style == style.row_a)
-		win.current_row_style = style.row_b;
-	else
-		win.current_row_style = style.row_a;
-
-	return win.current_row_style;
-} /*win_style_flip()*/
-
-
-static int
-win_parse_fromirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
-		  int *styl)
-{
-	wchar_t t[TIMELEN + 1];
-	wchar_t nick[NICKLEN + 1];
-	wchar_t cmd[CMDLEN + 1];
-	wchar_t chan[CHANLEN + 1];
-	wchar_t msg[WBUFLEN + 1]; //can be avoided?
-	wchar_t *p;
-	wchar_t *pbuf;
-	int i;
-
-	mbstowcs(wbuf, buf, WBUFLEN);
-	wbuf[WBUFLEN] = L'\0';
-
-	pbuf = wbuf;
-
-	p = t;
-	for(i = 0; i < TIMELEN; i++) *p++ = *pbuf++;
-	*p = L'\0';
-
-	pbuf += 3;
-	if(*pbuf != L':') return 0;
-	pbuf++;
-
-	p = nick;
-	i = 0;
-	while(*pbuf != L'!')
-	{
-		if(*pbuf == L'\0') return 0;
-		if(i >= NICKLEN) return 0;
-		*p++ = *pbuf++;
-		i++;
-	}
-	*p = L'\0';
-
-	while(*pbuf != L' ')
-	{
-		if(*pbuf == L'\0') return 0;
-		pbuf++;
-	}
-
-	pbuf++;
-	p = cmd;
-	i = 0;
-	while(*pbuf != L' ')
-	{
-		if(*pbuf == L'\0') return 0;
-		if(i >= CMDLEN) return 0;
-		*p++ = *pbuf++;
-		i++;
-	}
-	*p = L'\0';
-
-	if(wcscmp(cmd, L"PRIVMSG") != 0) return 0;
-
-	pbuf++;
-	p = chan;
-	i = 0;
-	while(*pbuf != L' ')
-	{
-		if(*pbuf == L'\0') return 0;
-		if(i >= CHANLEN) return 0;
-		*p++ = *pbuf++;
-		i++;
-	}
-	*p = L'\0';
-
-	while(*pbuf != L':')
-	{
-		if(*pbuf == L'\0') return 0;
-		pbuf++;
-	}
-	pbuf++;
-
-	swprintf(msg, WBUFLEN, L"%ls", pbuf);
-	msg[WBUFLEN] = L'\0';
-
-	t[TIMEMINEND + 1] = L'\0';
-	p = t + TIMEHRSTART;
-
-	swprintf(wbuf,
-		 WBUFLEN,
-		 L"%ls [%ls] %ls: %ls",
-		 p, chan, nick, msg);
-	wbuf[WBUFLEN] = L'\0';
-
-	if(wcsncmp(mynick, chan, NICKLEN) == 0)
-	{
-		*styl = style.row_tome;
-		count_tome++;
-	}
-	else
-	{
-	        *styl = win_row_style_flip();
-		if(wcsncmp(chan, tosend, CHANLEN) == 0)
-		{
-			if(*styl == style.row_a) *styl = style.row_a_hl;
-			else *styl = style.row_b_hl;
-		}
-	}
-
-	return 1;
-} /*win_parse_fromirc()*/
-
-
-static int
-win_parse_toirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
-		int *styl)
-{
-	wchar_t t[TIMELEN + 1];
-	wchar_t chan[CHANLEN + 1];
-	wchar_t msg[WBUFLEN + 1]; //can be avoided?
-	wchar_t *p;
-	wchar_t *pbuf;
-	int i;
-
-	*styl = style.input;
-
-	mbstowcs(wbuf, buf, WBUFLEN);
-	wbuf[WBUFLEN] = L'\0';
-
-	pbuf = wbuf;
-
-	p = t;
-	for(i = 0; i < TIMELEN; i++) *p++ = *pbuf++;
-	*p = L'\0';
-
-	pbuf += 3;
-	if(wcsncmp(pbuf, L"PONG", 4) == 0)
-	{
-		return 0;
-	}
-	else if(wcsncmp(pbuf, L"PRIVMSG", 7) != 0) //this is NOT (!=) privmsg
-	{
-		/*the whole wbuf will be printed, 1 means green light for
-		 * printing */
-		return 1;
-	}
-
-	/*if reached here - parsing PRIVMSG*/
-
-	pbuf += 8;
-	if(*pbuf == L'\0') return 0;
-
-	p = chan;
-	i = 0;
-	while(*pbuf != L' ')
-	{
-		if(*pbuf == L'\0') return 0;
-		if(i >= CHANLEN) return 0;
-		*p++ = *pbuf++;
-		i++;
-	}
-	*p = L'\0';
-
-	pbuf++;
-	swprintf(msg, WBUFLEN, L"%ls", pbuf);
-	msg[WBUFLEN] = L'\0';
-
-        t[TIMEMINEND + 1] = L'\0';
-        p = t + TIMEHRSTART;
-
-        swprintf(wbuf,
-		 WBUFLEN - 1,
-		 L"%ls [%ls] %ls: %ls",
-		 p, chan, mynick, msg);
-	wbuf[WBUFLEN] = '\0';
-	
-	return 1;
-} /*win_parse_toirc()*/
+} /*win_read_file()*/
 
 
 static void
-win_draw_entry(const wchar_t wbuf[WBUFLEN + 1], const int styl)
+win_draw_line(const char buf[CBUFLEN + 1])
+{
+	int res = ircproto_parse(win.ircproto, buf);
+
+	if(res == IRC_RES_PRIVMSG) win_draw_line_privmsg();
+	else if((res == IRC_RES_UNKNOWN) &&
+		(win.ircproto->mark == L'>') &&
+		(wcsncmp(win.ircproto->params, L"PONG", 4) != 0))
+		win_draw_line_myunspecified();
+	else if(res == IRC_RES_MYPRIVMSG) win_draw_line_myprivmsg();
+	else if(res == IRC_RES_ERROR) win_draw_line_error();
+} /*win_draw_line()*/
+
+
+static void
+win_draw_line_privmsg(void)
+{
+	int h;
+	int w;
+	int flag_tome = 0;
+
+	if((tosend[0] != '\0') &&
+	   (wcsncmp(win.ircproto->tonick, tosend, CHANLEN) != 0) &&
+	   (wcsncmp(win.ircproto->tonick, mynick, NICKLEN != 0)))
+		return;
+
+	getmaxyx(win.win, h, w);
+	wmove(win.win, h - 1, 0);
+
+	wattron(win.win, style.time);
+	wprintw(win.win, "%ls", win.ircproto->tshort);
+	wattroff(win.win, style.time);
+
+	if(wcsncmp(win.ircproto->tonick, mynick, NICKLEN) == 0)
+	{
+		flag_tome = 1;
+		count_tome++;
+	}
+
+	if(flag_tome) wattron(win.win, style.priv);
+	else wattron(win.win, stylerot_get(win.ircproto->tonick));
+
+	wprintw(win.win, " [%ls] ", win.ircproto->tonick);
+	wattron(win.win, style.mod_nick);
+	wprintw(win.win, "<%ls> ", win.ircproto->nick);
+	wattroff(win.win, style.mod_nick);
+
+	if(!flag_tome) wattroff(win.win, stylerot_get(win.ircproto->tonick));
+
+	wprintw(win.win, "%ls\n", win.ircproto->params);
+
+	if(flag_tome) wattroff(win.win, style.priv);
+
+} /*win_draw_line_privmsg()*/
+
+
+static void
+win_draw_line_myprivmsg(void)
 {
 	int h;
 	int w;
 
 	getmaxyx(win.win, h, w);
-
 	wmove(win.win, h - 1, 0);
-	wattron(win.win, styl);
-	wprintw(win.win, "%ls\n", wbuf);
-	wattroff(win.win, styl);
-} /*win_draw_entry()*/
+
+	wattron(win.win, style.time);
+	wprintw(win.win, "%ls", win.ircproto->tshort);
+	wattroff(win.win, style.time);
+
+	wattron(win.win, style.priv);
+	wprintw(win.win, " [%ls] ", win.ircproto->tonick);
+
+	wattron(win.win, style.mod_nick);
+	wprintw(win.win, "<%ls> ", win.ircproto->nick);
+	wattroff(win.win, style.mod_nick);
+
+	wprintw(win.win, "%ls\n", win.ircproto->params);
+	wattron(win.win, style.priv);
+} /*win_draw_line_myprivmsg()*/
+
+
+static void
+win_draw_line_error(void)
+{
+	int h;
+	int w;
+
+	getmaxyx(win.win, h, w);
+	wmove(win.win, h - 1, 0);
+
+	wattron(win.win, style.error);
+	wprintw(win.win, "%ls %lc %ls\n",
+		win.ircproto->t,
+		win.ircproto->mark,
+		win.ircproto->params);
+	wattroff(win.win, style.error);
+} /*win_draw_line_error()*/
+
+
+static void
+win_draw_line_myunspecified(void)
+{
+	int h;
+	int w;
+
+	getmaxyx(win.win, h, w);
+	wmove(win.win, h - 1, 0);
+
+	wattron(win.win, style.time);
+	wprintw(win.win, "%ls", win.ircproto->tshort);
+	wattroff(win.win, style.time);
+
+	wattron(win.win, style.priv);
+	wattron(win.win, style.mod_nick);
+	wprintw(win.win, " <%ls> ", mynick);
+	wattroff(win.win, style.mod_nick);
+
+	wprintw(win.win, "%ls\n", win.ircproto->params);
+	wattron(win.win, style.priv);
+} /*win_draw_line_myunspecified()*/

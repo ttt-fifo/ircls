@@ -31,7 +31,8 @@
 #define IRC_MSG_POSITION 22
 
 
-enum IrcResEnum {IRC_RES_UNKNOWN = 0, IRC_RES_PRIVMSG, IRC_RES_MYPRIVMSG};
+enum IrcResEnum {IRC_RES_UNKNOWN = 0, IRC_RES_PRIVMSG, IRC_RES_MYPRIVMSG,
+                 IRC_RES_ERROR};
 
 
 typedef struct IrcProto

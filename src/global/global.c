@@ -11,7 +11,7 @@
  * These are initialized here and used all over the program
  * via 'extern type var;'
  */
-Style style = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; //ncurses styles
+Style style; /*todo:init here*/
 /*FIXME: do we need count_tome here? It seams only bar uses it*/
 int count_tome = 0;                              //private msg received
 wchar_t mynick[NICKLEN + 1] = L"";               //nick name

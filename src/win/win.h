@@ -4,6 +4,7 @@
 
 #include <global/global.h>
 #include <index/index.h>
+#include <ircproto/ircproto.h>
 
 #include <ncursesw/curses.h> //WINDOW
 #include <panel.h> //PANEL
@@ -11,12 +12,7 @@
 #include <wchar.h> //wchar_t
 
 
-#define MARKPOSITION 20
-#define TIMELEN 19
-#define TIMEHRSTART 11
-#define TIMEMINEND 15
-#define CMDLEN 7
-#define HISTORYBUF 100   //must be greater than window height
+#define HISTORYBUF 100   //must be greater than window height, otherwise loss
 
 
 typedef struct Win
@@ -27,7 +23,7 @@ typedef struct Win
 	Index *index;
 	size_t read_bytes;
 	size_t display_bytes;
-	int current_row_style;
+	IrcProto *ircproto;
 } Win;
 
 
@@ -44,24 +40,22 @@ static void
 win_index_file(void);
 
 static void
-win_read(char buf[CBUFLEN + 1], const size_t start, const size_t end);
-
-static int
-win_parse(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1], int *styl);
-
-static int
-win_row_style_flip(void);
-
-static int
-win_parse_fromirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
-		  int *styl);
-
-static int
-win_parse_toirc(const char buf[CBUFLEN + 1], wchar_t wbuf[WBUFLEN + 1],
-		int *styl);
+win_read_file(char buf[CBUFLEN + 1], const size_t start, const size_t end);
 
 static void
-win_draw_entry(const wchar_t wbuf[WBUFLEN + 1], const int styl);
+win_draw_line(const char buf[CBUFLEN + 1]);
+
+static void
+win_draw_line_privmsg(void);
+
+static void
+win_draw_line_myprivmsg(void);
+
+static void
+win_draw_line_error(void);
+
+static void
+win_draw_line_myunspecified(void);
 
 
 #endif /*WIN_H*/

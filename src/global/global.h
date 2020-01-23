@@ -12,6 +12,7 @@
 #define CHANLEN 32                               //channels length
 #define SERVERLEN 128                            //server name length
 #define COUNTLEN 4                               //count of priv msgs string
+#define CHMULTIPLY 4                             //multiplier between ch -> wch
 
 
 #define MIN(a,b) (((a)<(b))?(a):(b))             //minimum macro
@@ -24,10 +25,8 @@
  */
 typedef struct Style
 {
-	int row_a;                               //row even representation
-	int row_b;                               //row odd representation
-	int row_a_hl;                            //row even highlighted
-	int row_b_hl;                            //row odd representation
+	int time;
+	int priv;
 	int row_tome;                            //messages to me
 	int error;                               //messages error
 	int bar;                                 //status bar main style
@@ -36,6 +35,7 @@ typedef struct Style
 	int count_highlight;                     //msg count highlighted
 	int border;                              //borders style
 	int input;                               //style of user input
+	int mod_nick;
 } Style;
 
 

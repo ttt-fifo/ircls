@@ -17,6 +17,7 @@
 #include <control/control.h>                     //some prototypes
 #include <global/global.h>                       //some globals
 #include <style/style.h>                         //ncurses styles
+#include <stylerot/stylerot.h>
 #include <bar/bar.h>                             //status bar object
 #include <win/win.h>                             //chat window object
 #include <in/in.h>                               //user input object
@@ -57,6 +58,8 @@ control_init(int argc, char *argv[])
 	/* Initialize all styles. The styles are written to a global variable
 	 * 'extern style' in order to be used by all objects*/
 	style_init();
+
+	stylerot_init();
 
 	if(win_init(argparse->fromirc) != 0)     //init chat window
 	{

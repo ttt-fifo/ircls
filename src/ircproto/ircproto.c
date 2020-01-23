@@ -34,6 +34,13 @@ ircproto_parse(IrcProto *ircproto, const char buf[CBUFLEN + 1])
 	wbuf[WBUFLEN] = L'\0';
 
         ircproto_parse_mark(ircproto, wbuf);
+
+	if(ircproto->mark == L'!')
+	{
+		ircproto_parse_unknown(ircproto, wbuf);
+		return IRC_RES_ERROR;
+	}
+
 	if(ircproto->mark == L'>')
 	{
 		pwbuf = wbuf + IRC_MSG_POSITION;

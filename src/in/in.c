@@ -332,7 +332,7 @@ in_cmd_msg_default(void)
 	wcstombs(cinbuf, in.buf, CBUFLEN);
 	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN, "PRIVMSG %s %s\n", ctosend, cinbuf);
+	snprintf(cbuf, CBUFLEN, "PRIVMSG %s :%s\n", ctosend, cinbuf);
 	cbuf[CBUFLEN] = '\0';
 
 	in_send_pipe(cbuf);

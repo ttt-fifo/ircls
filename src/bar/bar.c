@@ -67,22 +67,22 @@ bar_draw(void)
 	wmove(bar.win, 0, 0);
 
 	/*draw To label*/
-	len = wcslen(L"To: ");
+	len = wcslen(L"  To: ");
 	if(len >= w) goto PADDING;
 	wattron(bar.win, style.bar);
-	wprintw(bar.win, "To: ");
+	wprintw(bar.win, "  To: ");
 	wattroff(bar.win, style.bar);
 
 	/*draw configured To receiver*/
 	if(wcsncmp(tosend, L"", 1) == 0) 
-		wcsncpy(to, L"................", CHANLEN); //default for empty
+		wcsncpy(to, L"..............", CHANLEN); //default for empty
 	else
 		wcsncpy(to, tosend, CHANLEN);    //get from global tosend var
 	to[CHANLEN] = '\0';
-	len += wcslen(to);
+	len += wcslen(L"[") + wcslen(to) + wcslen(L"]");
 	if(len >= w) goto PADDING;
 	wattron(bar.win, style.bar_txtbox);
-	wprintw(bar.win, "%ls", to);
+	wprintw(bar.win, "[%ls]", to);
 	wattroff(bar.win, style.bar_txtbox);
 
 	/*draw private messages label*/
