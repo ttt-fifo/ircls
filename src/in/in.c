@@ -306,12 +306,6 @@ in_cmd_quit(void)
 
 
 static void
-in_cmd_exit(void)
-{
-} /*in_cmd_exit()*/
-
-
-static void
 in_cmd_msg_default(void)
 {
 	char cbuf[CBUFLEN + 1];

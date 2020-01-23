@@ -74,9 +74,6 @@ static void
 in_cmd_quit(void);
 
 static void
-in_cmd_exit(void);
-
-static void
 in_cmd_msg_default(void);
 
 static int
