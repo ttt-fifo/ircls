@@ -6,9 +6,6 @@
 
 #include <ncursesw/curses.h>
 #include <stdio.h> //fopen()
-#include <string.h> //strncmp()
-#include <time.h> //localtime_n()
-#include <stdlib.h> //mbstowcs()
 #include <wchar.h> //wchar_t
 
 
