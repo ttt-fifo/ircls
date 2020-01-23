@@ -7,6 +7,7 @@
 #include <ncursesw/curses.h>
 #include <stdio.h> //fopen()
 #include <wchar.h> //wchar_t
+#include <string.h> //strcspn()
 
 
 /*win data        fd    win   pan   read_bytes display_bytes current_row_style*/

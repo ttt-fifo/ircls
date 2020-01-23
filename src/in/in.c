@@ -91,10 +91,11 @@ in_draw(void)
 	wrefresh(in.win);                        //draw on virtual screen
 } /*in_draw()*/
 
+
 /*
  * Gets the input from the user
  */
-void
+int
 in_input(void)
 {
 	wchar_t ch;                              //wide char to get
@@ -114,8 +115,8 @@ in_input(void)
 		case 0: break;
 		case KEY_ENTER:                  //line termination
 		case L'\n':
-			in_input_process();
 			count_tome = 0;
+			return in_input_process();
 			break;
 		case KEY_BACKSPACE:              //backspace dels one char
 		case 127:
@@ -132,6 +133,8 @@ in_input(void)
 			if(!(ch & KEY_CODE_YES)) in_input_buffer(ch);
 			break;
 	}
+
+	return 1;
 } /*in_input()*/
 
 
@@ -150,9 +153,11 @@ in_input_buffer(const wchar_t ch)
 /*
  * Processes a command line from the user
  */
-static void
+static int
 in_input_process(void)
 {
+	int rv = 1;
+
 	in.buf[in.buf_offset] = L'\0';           //terminate buf string
 
 	/*react according to the command*/
@@ -162,13 +167,15 @@ in_input_process(void)
 	else if(wcsncmp(in.buf, L"/join", 5) == 0) in_cmd_join();
 	else if(wcsncmp(in.buf, L"/part", 5) == 0) in_cmd_part();
 	else if(wcsncmp(in.buf, L"/quit", 5) == 0) in_cmd_quit();
-	else if(wcsncmp(in.buf, L"/exit", 5) == 0) in_cmd_exit();
+	else if(wcsncmp(in.buf, L"/exit", 5) == 0) rv = 0;
 	else if(in.buf[0] == L'/') /*do nothing*/;
 	else in_cmd_msg_default();
 
 	/*clear the buffer for the next user input*/
 	in.buf[0] = L'\0';
 	in.buf_offset = 0;
+
+	return rv;
 } /*in_input_process()*/
 
 

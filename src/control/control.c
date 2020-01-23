@@ -59,6 +59,7 @@ control_init(int argc, char *argv[])
 	 * 'extern style' in order to be used by all objects*/
 	style_init();
 
+	/* Rotational styles for different chat conversations */
 	stylerot_init();
 
 	if(win_init(argparse->fromirc) != 0)     //init chat window
@@ -109,7 +110,7 @@ control_loop(void)
 	{
 		win_draw();                      //draws chat window
 		bar_draw();                      //draws status bar
-		in_input();                      //gets user input, here we
+		if(!in_input()) break;           //gets user input, here we
 		                                 //have delay aka sleep
 		in_draw();                       //draws user input on screeen
 	}

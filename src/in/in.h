@@ -46,13 +46,13 @@ in_del(void);
 void
 in_draw(void);
 
-void
+int
 in_input(void);
 
 static void
 in_input_buffer(const wchar_t ch);
 
-static void
+static int
 in_input_process(void);
 
 static void
