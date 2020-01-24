@@ -134,7 +134,7 @@ in_input(void)
 			break;
 	}
 
-	return 1;
+	return INPUTRV_OK;
 } /*in_input()*/
 
 
@@ -156,7 +156,7 @@ in_input_buffer(const wchar_t ch)
 static int
 in_input_process(void)
 {
-	int rv = 1;
+	int rv = INPUTRV_OK;
 
 	in.buf[in.buf_offset] = L'\0';           //terminate buf string
 
@@ -167,7 +167,8 @@ in_input_process(void)
 	else if(wcsncmp(in.buf, L"/join", 5) == 0) in_cmd_join();
 	else if(wcsncmp(in.buf, L"/part", 5) == 0) in_cmd_part();
 	else if(wcsncmp(in.buf, L"/quit", 5) == 0) in_cmd_quit();
-	else if(wcsncmp(in.buf, L"/exit", 5) == 0) rv = 0;
+	else if(wcsncmp(in.buf, L"/exit", 5) == 0) rv = INPUTRV_EXIT;
+	else if(wcsncmp(in.buf, L"/cls", 4) == 0) rv = INPUTRV_CLS;
 	else if(in.buf[0] == L'/') /*do nothing*/;
 	else in_cmd_msg_default();
 

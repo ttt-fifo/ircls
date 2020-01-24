@@ -46,5 +46,8 @@ stylerot_init(void);
 int
 stylerot_get(const wchar_t tonick[CHANLEN + 1]);
 
+int
+stylerot_random(void);
+
 
 #endif /*STYLEROT_H*/

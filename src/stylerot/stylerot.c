@@ -64,3 +64,17 @@ stylerot_get(const wchar_t tonick[CHANLEN + 1])
 	 * for the next run*/
 	return COLOR_PAIR(stylerot[i++].style);
 } /*stylerot_get()*/
+
+
+//NOTE srand(time(0)) should be invoked before this function
+int
+stylerot_random(void)
+{
+	int styl = range_random(STYLEROT_MAGENTA, STYLEROT_WHITE);
+	int modifier = range_random(0, 1);
+
+	if(modifier)
+		return COLOR_PAIR(styl) | A_BOLD;
+
+	return COLOR_PAIR(styl);
+} /*stylerot_random()*/

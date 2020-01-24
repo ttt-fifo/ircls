@@ -8,6 +8,9 @@
 #include <stdio.h> //fopen()
 #include <wchar.h> //wchar_t
 #include <string.h> //strcspn()
+#include <stdlib.h> //srand()
+#include <time.h> //time()
+#include <sys/select.h> //select()
 
 
 /*win data        fd    win   pan   read_bytes display_bytes current_row_style*/
@@ -258,3 +261,54 @@ win_draw_line_myunspecified(void)
 	wprintw(win.win, "%ls\n", win.ircproto->params);
 	wattron(win.win, style.priv);
 } /*win_draw_line_myunspecified()*/
+
+
+void 
+win_matrix_reloaded(void)
+{
+	int h;
+	int w;
+	int x;
+	int y;
+	int chcount;
+	int styl;
+	struct timeval tv;
+
+	getmaxyx(win.win, h, w);
+
+	chcount = h * w;
+
+	curs_set(0);                             //cursor off (more beautyful)
+	wmove(win.win, 0, 0);
+	srand(time(0)); //!!!
+	for(int i = 0; i < chcount; i++)
+	{
+
+		getyx(win.win, y, x);
+		if(x % 2 == 0)                   //even column
+		{
+		        styl = stylerot_random();//random style
+		        wattron(win.win, styl);
+			waddch(win.win, range_random(32, 126)); //random char
+		        wattroff(win.win, styl);
+		}
+		else                             //odd column
+			waddch(win.win, ' ');    //space
+
+
+	}
+	wrefresh(win.win);                       //display all on scr
+
+	for(int i = 0; i < chcount; i++)
+	{
+		waddch(win.win, ' ');            //space and immediately
+		wrefresh(win.win);               //display on scr
+
+		/*sleep implementation*/
+		tv.tv_sec = 0;
+		tv.tv_usec = 150; //todo 150
+		select(0, NULL, NULL, NULL, &tv);
+	}
+
+	curs_set(1);                             //cursor on (needed in input)
+} /*win_matrix_reloaded()*/

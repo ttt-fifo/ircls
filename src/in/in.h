@@ -18,6 +18,13 @@
 #define INBUFLEN 256                             //length of input buffer
 
 
+/*
+ * Return values from user input
+ * functions: in_input() and in_input_process()
+ */
+enum InputRvEnum {INPUTRV_OK=0, INPUTRV_EXIT, INPUTRV_CLS};
+
+
 /*in data type struct*/
 typedef struct In
 {

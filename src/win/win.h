@@ -57,5 +57,8 @@ win_draw_line_error(void);
 static void
 win_draw_line_myunspecified(void);
 
+void
+win_matrix_reloaded(void);
+
 
 #endif /*WIN_H*/

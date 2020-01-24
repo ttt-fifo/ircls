@@ -106,12 +106,20 @@ control_del(void)
 void
 control_loop(void)
 {
+	int inputrv;
+
 	while(1)
 	{
 		win_draw();                      //draws chat window
 		bar_draw();                      //draws status bar
-		if(!in_input()) break;           //gets user input, here we
+		inputrv = in_input();            //gets user input, here we
 		                                 //have delay aka sleep
+	
+		if(inputrv == INPUTRV_EXIT)      //user commanded /exit
+			break;
+		else if(inputrv == INPUTRV_CLS)  //user cmd clear screen
+			win_matrix_reloaded();   //this is cls function for fun
+
 		in_draw();                       //draws user input on screeen
 	}
 } /*control_loop()*/

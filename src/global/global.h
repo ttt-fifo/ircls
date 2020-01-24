@@ -39,4 +39,8 @@ typedef struct Style
 } Style;
 
 
+int
+range_random(int lower, int upper);
+
+
 #endif /*GLOBAL_H*/
