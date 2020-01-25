@@ -1,3 +1,7 @@
+/* 
+ * User input object
+ * Gets the input from user and sends it to irclsd named pipe (fifo)
+ */
 #include <in/in.h>                               //prototypes
 #include <global/global.h>                       //CHANLEN, etc
 
@@ -28,11 +32,11 @@ in_init(const char filename[PATHLEN + 1])
 	int h;                                   //height
 	int w;                                   //width
 
-	/* open the fifo, r+ means for read/write, but do not create
+	/* open the fifo, r+ means for read/write, but do not create.
 	 * write is needed not to hang waiting for writer on the other end
 	 */
 	in.fd = fopen(filename, "r+");
-	if(in.fd == NULL) return 0;              //ERR
+	if(in.fd == NULL) return 0;
 
 	getmaxyx(stdscr, h, w);
 
@@ -43,7 +47,6 @@ in_init(const char filename[PATHLEN + 1])
 	in.pan = new_panel(in.win);              //pannel for z axis overlap
 
 	return 1;                                //OK
-
 } /*in_init()*/
 
 
@@ -107,7 +110,7 @@ in_input(void)
 	getmaxyx(in.win, h, w);
 	wmove(in.win, 0, MIN(in.buf_offset, w - 1));
 
-	wget_wch(in.win, &ch);
+	wget_wch(in.win, &ch);                   //get one wide char
 
 	switch(ch)                               //act according to input
 	{
@@ -116,7 +119,7 @@ in_input(void)
 		case KEY_ENTER:                  //line termination
 		case L'\n':
 			count_tome = 0;
-			return in_input_process();
+			return in_input_process(); //return value to control
 			break;
 		case KEY_BACKSPACE:              //backspace dels one char
 		case 127:
@@ -134,7 +137,7 @@ in_input(void)
 			break;
 	}
 
-	return INPUTRV_OK;
+	return INPUTRV_OK;                       //default return val is OK
 } /*in_input()*/
 
 
@@ -156,7 +159,7 @@ in_input_buffer(const wchar_t ch)
 static int
 in_input_process(void)
 {
-	int rv = INPUTRV_OK;
+	int rv = INPUTRV_OK;                     //return val (default OK)
 
 	in.buf[in.buf_offset] = L'\0';           //terminate buf string
 
@@ -244,6 +247,7 @@ in_cmd_msg(void)
 	wcstombs(cinbuf, p, CBUFLEN);
 	cinbuf[CBUFLEN] = '\0';
 
+	/*TODO: this is not working, should have : before message*/
 	snprintf(cbuf, CBUFLEN, "PRIVMSG%s\n", cinbuf);
 	cbuf[CBUFLEN] = '\0';
 
@@ -251,6 +255,10 @@ in_cmd_msg(void)
 } /*in_cmd_msg()*/
 
 
+/*
+ * Processes user command /join
+ * Joins to a channel
+ */
 static void
 in_cmd_join(void)
 {
@@ -258,19 +266,23 @@ in_cmd_join(void)
 	char cbuf[CBUFLEN + 1];
 	char cinbuf[CBUFLEN + 1];
 
-	p = in.buf + 5;
+	p = in.buf + 5;                          //move after user command
 	if(*p == L'\0') return;
 
-	wcstombs(cinbuf, p, CBUFLEN);
+	wcstombs(cinbuf, p, CBUFLEN);            //convert to multibyte
 	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN, "JOIN%s\n", cinbuf);
+	snprintf(cbuf, CBUFLEN, "JOIN%s\n", cinbuf); //arrange IRC proto cmd
 	cbuf[CBUFLEN] = '\0';
 
-	in_send_pipe(cbuf);
+	in_send_pipe(cbuf);                      //send to IRC socket
 } /*in_cmd_join()*/
 
 
+/*
+ * Processes user command /part
+ * Parts from a channel
+ */
 static void
 in_cmd_part(void)
 {
@@ -278,79 +290,90 @@ in_cmd_part(void)
 	char cbuf[CBUFLEN + 1];
 	char cinbuf[CBUFLEN + 1];
 
-	p = in.buf + 5;
+	p = in.buf + 5;                          //move to end of user command
 	if(*p == L'\0') return;
 
-	wcstombs(cinbuf, p, CBUFLEN);
+	wcstombs(cinbuf, p, CBUFLEN);            //convert to multibyte
 	cinbuf[CBUFLEN] = '\0';
 
-	snprintf(cbuf, CBUFLEN, "PART%s\n", cinbuf);
+	snprintf(cbuf, CBUFLEN, "PART%s\n", cinbuf); //IRC protocol command
 	cbuf[CBUFLEN] = '\0';
 
-	in_send_pipe(cbuf);
+	in_send_pipe(cbuf);                      //send to IRC socket
 } /*in_cmd_part()*/
 
 
+/*
+ * Processes user command /quit
+ * Quits the connection to server.
+ * Does not exit the client process (there is command /exit for this)
+ */
 static void
 in_cmd_quit(void)
 {
-	wchar_t *p;
-	char cbuf[CBUFLEN + 1];
-
-	p = in.buf + 5;
-
-	snprintf(cbuf, CBUFLEN, "QUIT\n");
-	cbuf[CBUFLEN] = '\0';
-
-	in_send_pipe(cbuf);
+	in_send_pipe("QUIT\n");
 } /*in_cmd_quit()*/
 
 
+/*
+ * Sends a message to the user commanded "To:" channel (the "To:" field in the 
+ * status bar). When "To:" field in status bar is configured, then everything
+ * user inputs is send directly as a message to the "To:" channel.
+ */
 static void
 in_cmd_msg_default(void)
 {
-	char cbuf[CBUFLEN + 1];
-	char ctosend[4*CHANLEN + 1];
-	char cinbuf[CBUFLEN + 1];
-	wchar_t *p;
+	char cbuf[CBUFLEN + 1];                  //character string buffer
+	char ctosend[CHMULTIPLY*CHANLEN + 1];    //char string tosend
+	char cinbuf[CBUFLEN + 1];                //char string for in.buf
+	wchar_t *p;                              //pointer for manipulations
 
-	if(tosend[0] == L'\0')
-	{
-		/*todo:handle error color*/
+	if(tosend[0] == L'\0')                   //tosend not configured
+	{                                        //so do nothing
 		return;
 	}
 
 	p = in.buf;
 
-	while(*p == L' ') p++;
+	while(*p == L' ') p++;                   //rewind empty spaces
 	if(*p == L'\0')
 	{
-		/*todo*/
 		return;
 	}
 
-	wcstombs(ctosend, tosend, 4*CHANLEN);
-	ctosend[4*CHANLEN] = '\0';
+	/*convert these to multibyte strings*/
+	wcstombs(ctosend, tosend, CHMULTIPLY*CHANLEN);
+	ctosend[CHMULTIPLY*CHANLEN] = '\0';
 	wcstombs(cinbuf, in.buf, CBUFLEN);
 	cinbuf[CBUFLEN] = '\0';
 
+	/*construct buffer to send*/
 	snprintf(cbuf, CBUFLEN, "PRIVMSG %s :%s\n", ctosend, cinbuf);
 	cbuf[CBUFLEN] = '\0';
 
-	in_send_pipe(cbuf);
+	in_send_pipe(cbuf);                      //send to irc 
 } /*in_cmd_msg_default()*/
 
 
+/* 
+ * Sends string to ircls pipe
+ * buf: character string to send
+ */
 static int
 in_send_pipe(const char buf[CBUFLEN + 1])
 {
 	fwrite(buf, sizeof(char), strlen(buf), in.fd);
 	fflush(in.fd);
+	return 0; /*TODO: some error checking?*/
 } /*in_send_pipe()*/
 
 
+/*
+ * Processes backspace key pressed
+ */
 static void
 in_key_backspace(void)
 {
+	/*returns one char back in buffer, discards last char*/
 	if(in.buf_offset > 0) in.buf_offset--;
 } /*in_key_backspace()*/

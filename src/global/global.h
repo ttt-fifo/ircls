@@ -25,9 +25,8 @@
  */
 typedef struct Style
 {
-	int time;
-	int priv;
-	int row_tome;                            //messages to me
+	int time;                                //action time
+	int priv;                                //private messages to me
 	int error;                               //messages error
 	int bar;                                 //status bar main style
 	int bar_txtbox;                          //textbox in the status bar
@@ -35,10 +34,18 @@ typedef struct Style
 	int count_highlight;                     //msg count highlighted
 	int border;                              //borders style
 	int input;                               //style of user input
-	int mod_nick;
+	int mod_nick;                            //modifier of sending nick
 } Style;
 
 
+/*
+ * Helper to give random integer from specified range
+ * lower: lowest possible integer to give
+ * upper: upper possible integer to give
+ * Returns: a random integer in range lower - upper
+ * NOTE: (!) before using this function a random seed should be set manually
+ *       e.g: srand(time(0));
+ */
 int
 range_random(int lower, int upper);
 

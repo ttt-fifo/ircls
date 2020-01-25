@@ -17,7 +17,7 @@
 #include <control/control.h>                     //some prototypes
 #include <global/global.h>                       //some globals
 #include <style/style.h>                         //ncurses styles
-#include <stylerot/stylerot.h>
+#include <stylerot/stylerot.h>                   //rotational styles
 #include <bar/bar.h>                             //status bar object
 #include <win/win.h>                             //chat window object
 #include <in/in.h>                               //user input object
@@ -46,6 +46,8 @@ extern wchar_t tosend[CHANLEN + 1];
 void
 control_init(int argc, char *argv[])
 {
+	int rv;                                  //return value of some funct
+
 	setlocale(LC_ALL, "");                   //will get unicode arguments
 	                                         //and display wide chars
 
@@ -62,9 +64,18 @@ control_init(int argc, char *argv[])
 	/* Rotational styles for different chat conversations */
 	stylerot_init();
 
-	if(win_init(argparse->fromirc) != 0)     //init chat window
+	rv = win_init(argparse->fromirc);        //init chat window
+	if((rv == -2) || (rv == -3))
 	{
-		/*TODO*/
+		control_del();
+		printf("*ERROR 207* cannot allocate memory");
+		exit(7);
+	}
+	else if(rv == -1)
+	{
+		control_del();
+		printf("*ERROR 208* cannot open fromirc file");
+		exit(8);
 	}
 
 	bar_init();                              //init status bar

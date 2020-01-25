@@ -171,7 +171,7 @@ win_draw_line_privmsg(void)
 	wmove(win.win, h - 1, 0);
 
 	wattron(win.win, style.time);
-	wprintw(win.win, "%ls", win.ircproto->tshort);
+	wprintw(win.win, "%ls ", win.ircproto->tshort);
 	wattroff(win.win, style.time);
 
 	if(wcsncmp(win.ircproto->tonick, mynick, NICKLEN) == 0)
@@ -183,14 +183,14 @@ win_draw_line_privmsg(void)
 	if(flag_tome) wattron(win.win, style.priv);
 	else wattron(win.win, stylerot_get(win.ircproto->tonick));
 
-	wprintw(win.win, " [%ls] ", win.ircproto->tonick);
+	wprintw(win.win, "[%ls] ", win.ircproto->tonick);
 	wattron(win.win, style.mod_nick);
-	wprintw(win.win, "<%ls> ", win.ircproto->nick);
+	wprintw(win.win, "<%ls>", win.ircproto->nick);
 	wattroff(win.win, style.mod_nick);
 
 	if(!flag_tome) wattroff(win.win, stylerot_get(win.ircproto->tonick));
 
-	wprintw(win.win, "%ls\n", win.ircproto->params);
+	wprintw(win.win, " %ls\n", win.ircproto->params);
 
 	if(flag_tome) wattroff(win.win, style.priv);
 

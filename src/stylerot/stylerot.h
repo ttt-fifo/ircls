@@ -18,7 +18,8 @@
  * starts from 25. The other user defined styles should be less than 25
  */
 enum StyleRotEnum {STYLEROT_MAGENTA = 25, STYLEROT_CYAN, STYLEROT_BLUE,
-	           STYLEROT_RED, STYLEROT_GREEN, STYLEROT_WHITE};
+	           STYLEROT_RED, STYLEROT_GREEN,
+		   STYLEROT_WHITE};
 
 
 /* 
