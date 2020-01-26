@@ -1,4 +1,5 @@
-/* Rotating style used to assign to different chat conversations
+/* 
+ * Rotating style used to assign to different chat conversations
  */
 #ifndef STYLEROT_H
 #define STYLEROT_H
@@ -47,6 +48,13 @@ stylerot_init(void);
 int
 stylerot_get(const wchar_t tonick[CHANLEN + 1]);
 
+/* 
+ * Fetches one style randomly
+ * Returns: the fetched ncurses style
+ * NOTE: the random seed should be initialized manually in the program before
+ *       using this function, example
+ *       srand(time(0)); //initialize random seed from current time
+ */
 int
 stylerot_random(void);
 

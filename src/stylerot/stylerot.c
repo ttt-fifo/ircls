@@ -1,5 +1,5 @@
 #include <stylerot/stylerot.h>                   //prototypes
-#include <global/global.h>                       //CHANLEN
+#include <global/global.h>                       //CHANLEN, range_random()
 
 #include <ncursesw/curses.h>
 #include <wchar.h>                               //wchar_t
@@ -66,15 +66,28 @@ stylerot_get(const wchar_t tonick[CHANLEN + 1])
 } /*stylerot_get()*/
 
 
-//NOTE srand(time(0)) should be invoked before this function
+/* 
+ * Fetches one style randomly
+ * Returns: the fetched ncurses style
+ * NOTE: the random seed should be initialized manually in the program before
+ *       using this function, example
+ *       srand(time(0)); //initialize random seed from current time
+ */
 int
 stylerot_random(void)
 {
+	/*get one style randomly*/
 	int styl = range_random(STYLEROT_MAGENTA, STYLEROT_WHITE);
+
+	/*random bold modifier*/
 	int modifier = range_random(0, 1);
 
+	/*return the random color_pair below*/
+
+	/*if bold*/
 	if(modifier)
 		return COLOR_PAIR(styl) | A_BOLD;
 
+	/*otherwise plain*/
 	return COLOR_PAIR(styl);
 } /*stylerot_random()*/

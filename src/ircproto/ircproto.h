@@ -164,6 +164,7 @@ ircproto_parse_params(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1]);
 
 /*
  * Parses IRC privmsg sent from me
+ * In irclsd log file it looks like this: 2020-01-01-00:01 > PRIVMSG :somemsg
  * ircproto: data to save to
  * wbuf: wide char IRC line buffer
  * Returns: 0 Err, 1 OK

@@ -1,3 +1,23 @@
+/* Simple and incomplete implementation of IRC protocol parsing
+ * We implement only the parts we need from the full implementation given here:
+ * ----------------------------------------------------------------------------
+ * https://tools.ietf.org/html/rfc1459  -- Original specification
+ * https://tools.ietf.org/html/rfc2810  -- Architecture specfication
+ * https://tools.ietf.org/html/rfc2811  -- Channel specification
+ * https://tools.ietf.org/html/rfc2812  -- Client specification
+ * https://tools.ietf.org/html/rfc2813  -- Server specification
+ * ----------------------------------------------------------------------------
+ * <message>  ::= [':' <prefix> <SPACE> ] <command> <params> <crlf>
+ * <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+ * <command>  ::= <letter> { <letter> } | <number> <number> <number>
+ * <SPACE>    ::= ' ' { ' ' }
+ * <params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+ * <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
+               or NUL or CR or LF, the first of which may not be ':'>
+ * <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+ *                  NUL or CR or LF>
+ * <crlf>     ::= CR LF
+ */
 #include <ircproto/ircproto.h>
 #include <global/global.h>                       //mynick[]
 
@@ -317,17 +337,25 @@ ircproto_parse_params(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 } /*ircproto_parse_params()*/
 
 
+/*
+ * Parses IRC privmsg sent from me
+ * In irclsd log file it looks like this: 2020-01-01-00:01 > PRIVMSG :somemsg
+ * ircproto: data to save to
+ * wbuf: wide char IRC line buffer
+ * Returns: 0 Err, 1 OK
+ */
 static int
 ircproto_parse_myprivmsg(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 {
-	wchar_t *pwbuf;
-	wchar_t *ptonick;
-	int i;
+	wchar_t *pwbuf;                          //ptr to wbuf
+	wchar_t *ptonick;                        //ptr to ircproto.tonick
+	int i;                                   //index
 
 	ircproto_parse_time(ircproto, wbuf);
 
 	wcsncpy(ircproto->cmd, L"PRIVMSG", 8); //copies '\0' termination
 
+	/*copies my nick from globals*/
 	wcsncpy(ircproto->nick, mynick, NICKLEN);
 	ircproto->nick[NICKLEN] = L'\0';
 
@@ -336,6 +364,7 @@ ircproto_parse_myprivmsg(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 	while(*pwbuf != L' ') if(*pwbuf++ == L'\0') return 0; //rewind cmd
 	while(*pwbuf == L' ') if(*pwbuf++ == L'\0') return 0;
 
+	/*get tonick*/
 	ptonick = ircproto->tonick;
 	i = 0;
 	while(i < CHANLEN)
@@ -349,6 +378,7 @@ ircproto_parse_myprivmsg(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 
 	while(*pwbuf == L' ') if(*pwbuf++ == L'\0') return 0; //rewind empty
 
+	/*copy the user message in params*/
 	wcsncpy(ircproto->params, pwbuf, WBUFLEN);
 	ircproto->params[WBUFLEN] = L'\0';
 
