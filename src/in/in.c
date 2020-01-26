@@ -186,6 +186,10 @@ in_input_process(void)
 /* 
  * Processes user command '/to'
  * Copies the given channel to the global variable
+ * Sets "To:" in status bar. The effect of setting it is that all messages
+ * typed by the user will be going to this channel, also other channels are
+ * filtered and their messages are not visible anymore (until unsetting "To:")
+ * Unsetting is don by typing an empty '/to' in command line.
  */
 static void
 in_cmd_to(void)
