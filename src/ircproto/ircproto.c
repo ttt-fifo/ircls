@@ -297,8 +297,6 @@ static int
 ircproto_parse_params(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 {
 	wchar_t *pwbuf;                          //ptr to wbuf
-	wchar_t *pparams;                        //ptr to ircproto.params
-	int i;
 
 	pwbuf = wbuf + IRC_MSG_POSITION;
 
@@ -310,18 +308,10 @@ ircproto_parse_params(IrcProto *ircproto, wchar_t wbuf[WBUFLEN + 1])
 
 	while(*pwbuf != L' ') if(*pwbuf++ == L'\0') return 0; //rewind tonick
 	while(*pwbuf == L' ') if(*pwbuf++ == L'\0') return 0;
-	/*todo rewind :*/
 
-	/*todo: this to be refactored with wcsncpy()*/
-        pparams = ircproto->params;
-	i = 0;
-	while(i < WBUFLEN)
-	{
-		if(*pwbuf == L'\0') break;
-		*pparams++ = *pwbuf++;
-		i++;
-	}
-	*pparams = L'\0';
+	/*copy all reminding to params*/
+	wcsncpy(ircproto->params, pwbuf, WBUFLEN);
+	ircproto->params[WBUFLEN] = L'\0';
 
 	return 1; //OK
 } /*ircproto_parse_params()*/
