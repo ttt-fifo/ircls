@@ -4,6 +4,8 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+/*logo file to display on startup*/
+#define LOGO "data/logo.txt"
 
 #define PATHLEN 1023                             //length of the paths
 #define WBUFLEN 1023                             //wchar buffers length

@@ -60,6 +60,12 @@ void
 win_draw(void);
 
 /*
+ * Draws textual logo on screen
+ */
+static void
+win_draw_logo(void);
+
+/*
  * Indexes the irclsd output log file into the win.index object
  */
 static void

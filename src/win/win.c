@@ -80,6 +80,8 @@ win_init(const char filename[PATHLEN + 1])
 	 */
 	index_get(win.index, &(win.display_bytes), -1);
 
+	win_draw_logo();                         //draw the logo
+
 	return 0;                                //OK
 } /*win_init()*/
 
@@ -156,6 +158,44 @@ win_draw(void)
 	/*draw from virtual screen to user screen*/
 	wrefresh(win.win);
 } /*win_draw()*/
+
+
+/*
+ * Draws textual logo on screen
+ */
+static void
+win_draw_logo(void)
+{
+	char buf[CBUFLEN + 1];                   //a line buffer
+	int h;                                   //height
+	int w;                                   //width
+	FILE *fp = fopen(LOGO, "r");             //open logo.txt file
+	if(fp == NULL) return;
+
+	getmaxyx(win.win, h, w);
+
+	/*draw logo on screen */
+	wmove(win.win, 0, 0);
+	waddch(win.win, '\n');
+	waddch(win.win, '\n');
+	wattron(win.win, style.error);
+	while(fgets(buf, CBUFLEN, fp) != NULL)
+	{
+		buf[strcspn(buf, "\n")] = 0;
+		if(strlen(buf) > w - 1)          //logo line needs to be less
+		{                                //than screen width
+			wattroff(win.win, style.error);
+			fclose(fp);
+			wrefresh(win.win);
+			return;
+		}
+		wprintw(win.win, "%s\n", buf);
+	}
+	wattroff(win.win, style.error);
+
+	fclose(fp);
+	wrefresh(win.win);                       //draw on user screen
+} /*win_draw_logo()*/
 
 
 /*
